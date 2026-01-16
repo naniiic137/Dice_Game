@@ -74,7 +74,12 @@ submitBtn.addEventListener('click', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name, score: rollCount })
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return res.json();
+    })
     .then(data => {
         if (data.status === 'success') {
             modal.style.display = 'none';
@@ -82,6 +87,10 @@ submitBtn.addEventListener('click', () => {
             // Reload page to restart or implement reset logic here
             location.reload(); 
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("There was an error saving your score. Please try again.");
     });
 });
 

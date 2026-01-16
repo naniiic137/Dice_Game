@@ -49,6 +49,8 @@ def leaderboard():
     conn.close()
     return jsonify([dict(row) for row in scores])
 
+# Initialize the database when the app starts (Crucial for PythonAnywhere)
+init_db()
+
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
