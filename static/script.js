@@ -1,4 +1,4 @@
-let rollCount = 0;
+let rollCount = localStorage.getItem('rollCount') ? parseInt(localStorage.getItem('rollCount')) : 0;
 let rollInterval = 100;
 let isRolling = true;
 let timer = null;
@@ -30,6 +30,7 @@ function rollDice() {
 
     rollCount++;
     counterElement.textContent = rollCount;
+    localStorage.setItem('rollCount', rollCount);
 
     const values = [];
     diceElements.forEach(img => {
@@ -55,6 +56,7 @@ function stopGame() {
     clearTimeout(timer);
     finalScoreElement.textContent = rollCount;
     modal.style.display = 'block';
+    localStorage.setItem('gameFinished', 'true');
 }
 
 document.getElementById('faster-btn').addEventListener('click', () => {
@@ -82,6 +84,8 @@ submitBtn.addEventListener('click', () => {
     })
     .then(data => {
         if (data.status === 'success') {
+            localStorage.removeItem('rollCount');
+            localStorage.removeItem('gameFinished');
             modal.style.display = 'none';
             updateLeaderboard();
             // Reload page to restart or implement reset logic here
@@ -96,4 +100,13 @@ submitBtn.addEventListener('click', () => {
 
 // Initialize
 updateLeaderboard();
-rollDice();
+
+if (localStorage.getItem('gameFinished') === 'true') {
+    isRolling = false;
+    counterElement.textContent = rollCount;
+    finalScoreElement.textContent = rollCount;
+    modal.style.display = 'block';
+} else {
+    counterElement.textContent = rollCount;
+    rollDice();
+}
