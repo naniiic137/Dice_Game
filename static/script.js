@@ -1,3 +1,13 @@
+// Check if it's a new day to reset the counter
+const today = new Date().toDateString();
+const lastDate = localStorage.getItem('lastDate');
+
+if (lastDate !== today) {
+    localStorage.removeItem('rollCount');
+    localStorage.removeItem('gameFinished');
+    localStorage.setItem('lastDate', today);
+}
+
 let rollCount = localStorage.getItem('rollCount') ? parseInt(localStorage.getItem('rollCount')) : 0;
 let rollInterval = 100;
 let isRolling = true;
@@ -19,7 +29,10 @@ function updateLeaderboard() {
             list.innerHTML = '';
             data.forEach(entry => {
                 const li = document.createElement('li');
-                li.innerHTML = `<span>${entry.name}</span> <span>${entry.score}</span>`;
+                li.innerHTML = `
+                    <span>${entry.name} <span class="edit-btn" data-id="${entry.id}" style="cursor:pointer; color:#888;">✎</span></span> 
+                    <span>${entry.score}</span>
+                `;
                 list.appendChild(li);
             });
         });
@@ -96,6 +109,26 @@ submitBtn.addEventListener('click', () => {
         console.error('Error:', error);
         alert("There was an error saving your score. Please try again.");
     });
+});
+
+// Event listener for editing names in leaderboard
+document.getElementById('leaderboard-list').addEventListener('click', (e) => {
+    if (e.target.classList.contains('edit-btn')) {
+        const id = e.target.getAttribute('data-id');
+        const newName = prompt("Enter new name:");
+        
+        if (newName) {
+            fetch('/update_name', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, name: newName })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') updateLeaderboard();
+            });
+        }
+    }
 });
 
 // Initialize

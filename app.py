@@ -45,9 +45,23 @@ def submit_score():
 def leaderboard():
     conn = get_db_connection()
     # Order by score ASC because lower score (fewer rolls) is better
-    scores = conn.execute('SELECT name, score FROM scores ORDER BY score ASC LIMIT 10').fetchall()
+    scores = conn.execute('SELECT id, name, score FROM scores ORDER BY score ASC LIMIT 10').fetchall()
     conn.close()
     return jsonify([dict(row) for row in scores])
+
+@app.route('/update_name', methods=['POST'])
+def update_name():
+    data = request.get_json()
+    score_id = data.get('id')
+    new_name = data.get('name')
+    
+    if score_id and new_name:
+        conn = get_db_connection()
+        conn.execute('UPDATE scores SET name = ? WHERE id = ?', (new_name, score_id))
+        conn.commit()
+        conn.close()
+        return jsonify({'status': 'success'})
+    return jsonify({'status': 'error'}), 400
 
 # Initialize the database when the app starts (Crucial for PythonAnywhere)
 init_db()
