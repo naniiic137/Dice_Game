@@ -4,3 +4,6 @@ database.db
 venv/
 .env
 .DS_Store
+/index.html
+/main.py
+/images/
