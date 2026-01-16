@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dice Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="main-container">
+        <!-- Left Side: Game Area -->
+        <div class="game-area">
+            <h1>Dice Game</h1>
+            <div class="dice-container" id="dice-container">
+                <!-- Dice images -->
+                <img src="/static/images/d1.png" class="dice">
+                <img src="/static/images/d1.png" class="dice">
+                <img src="/static/images/d1.png" class="dice">
+                <img src="/static/images/d1.png" class="dice">
+                <img src="/static/images/d1.png" class="dice">
+                <img src="/static/images/d1.png" class="dice">
+            </div>
+            
+            <div class="controls">
+                <button id="faster-btn">Faster</button>
+                <button id="slower-btn">Slower</button>
+            </div>
+            
+            <div class="counter-display">
+                Counter: <span id="counter">0</span>
+            </div>
+            
+            <button id="restart-btn" style="display:none; margin-top: 20px;">Play Again</button>
+        </div>
+
+        <!-- Right Side: Leaderboard -->
+        <div class="leaderboard-area">
+            <h2>Leaderboard</h2>
+            <p>Top Players (Lowest Rolls)</p>
+            <ul id="leaderboard-list">
+                <!-- Leaderboard items injected by JS -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Popup Modal for Name Entry -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2>Game Over</h2>
+            <p>You matched all dice in <span id="final-score">0</span> rolls!</p>
+            <p>Enter your name to save your score:</p>
+            <input type="text" id="player-name" placeholder="Your Name">
+            <button id="submit-score-btn">Submit Score</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
