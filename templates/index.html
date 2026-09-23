@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Dice Game</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -48,7 +49,7 @@
             <h2>Game Over</h2>
             <p>You matched all dice in <span id="final-score">0</span> rolls!</p>
             <p>Enter your name to save your score:</p>
-            <input type="text" id="player-name" placeholder="Your Name">
+            <input type="text" id="player-name" placeholder="Your Name" maxlength="20">
             <button id="submit-score-btn">Submit Score</button>
         </div>
     </div>

@@ -1,64 +1,80 @@
 # 🎲 Dice Game
 
-A fun and interactive dice matching game available as both a **Web Application** and a **Desktop Application**.
+A small web game built with Flask and vanilla JavaScript. Six dice roll automatically; the round ends when all six show the same face, and the number of rolls it took is your score. Fewer rolls is better, and a global leaderboard keeps the top 10.
 
-**Goal:** The dice roll automatically. Your goal is to wait until all 6 dice show the same number. The game tracks how many rolls it took to achieve a perfect match.
+(The chance of six matching dice on one roll is 6 / 6⁶ = 1 in 7,776, so a typical game takes a few thousand rolls.)
 
 ## 🌐 Live Demo
 
-Play the web version online here:  
 👉 **[https://nanic137.pythonanywhere.com](https://nanic137.pythonanywhere.com)**
 
 ## ✨ Features
 
-### Web Version
-- **Real-time Dice Rolling:** Visual simulation of rolling dice.
-- **Global Leaderboard:** Compete with others for the lowest roll count.
-- **Speed Controls:** Make the rolling faster or slower.
-- **Responsive Design:** Works on desktop and mobile browsers.
-- **Tech Stack:** Python (Flask), HTML, CSS, JavaScript, SQLite.
+- **Automatic dice rolling** with image-based dice and **Faster / Slower** speed controls.
+- **Global leaderboard** (SQLite) showing the 10 lowest roll counts.
+- **Rename your own score**: when you submit a score the server returns a one-time edit token; the browser keeps it in `localStorage` and only a SHA-256 hash is stored in the database. Only the browser that submitted a score can rename it.
+- **Refresh-proof rounds**: the roll counter and a finished round are kept in `localStorage`, so refreshing the page does not reset your count.
+- **Server-side validation**: names are 1–20 visible characters (control characters and `<` `>` are stripped), scores must be whole numbers between 1 and 1,000,000.
+- **XSS-safe rendering**: leaderboard names are always inserted with `textContent`, never as HTML.
+- Layout adapts to phone screens.
 
-### Desktop Version
-- **Pygame Interface:** Smooth graphical window.
-- **Interactive Controls:** Adjust roll speed with on-screen buttons.
-- **Tech Stack:** Python, Pygame.
+**Tech stack:** Python 3, Flask, SQLite, HTML, CSS, JavaScript.
 
-## 🛠️ Installation & Setup
+## 🛠️ Run locally
 
-If you want to run the code locally on your machine, follow these steps.
-
-### 1. Clone the Repository
 ```bash
 git clone https://github.com/naniiic137/Dice_Game.git
 cd Dice_Game
-```
-
-### 2. Install Dependencies
-You need Python installed. Then run:
-```bash
-pip install flask pygame
-```
-
-### 3. Run the Web Game
-To play the browser version locally:
-```bash
+python -m venv venv
+# Windows: venv\Scripts\activate    macOS/Linux: source venv/bin/activate
+pip install -r requirements.txt
 python app.py
 ```
-Open your browser and go to `http://127.0.0.1:5000`.
 
-### 4. Run the Desktop Game
-To play the Pygame version:
+Then open `http://127.0.0.1:5000`. The SQLite file `database.db` is created next to `app.py` on first start (set `DICE_DB_PATH` to use another location).
+
+Debug mode is **off** by default. For local development only: `FLASK_DEBUG=1 python app.py` (PowerShell: `$env:FLASK_DEBUG=1; python app.py`).
+
+## ✅ Tests
+
+The tests use Flask's built-in test client and a temporary database; no server is started.
+
 ```bash
-python main.py
+python -m unittest discover tests -v
 ```
+
+They cover score and name validation, HTML/control-character stripping, edit-token checks on renaming, leaderboard ordering, and migrating a database created by the older version.
+
+## 🚀 Deploying updates to PythonAnywhere
+
+The live demo runs on PythonAnywhere from a clone of this repository.
+
+1. Open a **Bash console** on PythonAnywhere and pull the latest code:
+   ```bash
+   cd ~/Dice_Game        # or wherever the repo was cloned
+   git pull
+   ```
+2. Go to the **Web** tab and click **Reload** for `nanic137.pythonanywhere.com`.
+
+The existing `database.db` is kept. When the app reloads, it adds the new `edit_token_hash` column automatically. Scores saved before this update keep their names but can no longer be renamed, because they have no edit token.
 
 ## 📂 Project Structure
 
-- `app.py` - The Flask backend server for the web game.
-- `main.py` - The Pygame script for the desktop application.
-- `templates/` - HTML files for the web interface.
-- `static/` - CSS, JavaScript, and Image assets.
-- `database.db` - SQLite database storing leaderboard scores.
+```
+app.py              Flask app: page route + JSON API (/submit_score, /leaderboard, /update_name)
+templates/index.html  Game page
+static/script.js    Dice rolling, leaderboard rendering, submit / rename logic
+static/style.css    Styles
+static/images/      Dice faces d1.png … d6.png
+tests/test_app.py   API tests (unittest + Flask test client)
+```
 
----
-*Created by Naniii*
+## ⚠️ Limitations
+
+- The game runs in the browser, so the score is computed client-side. The server rejects impossible values but cannot prove a score was actually played. Treat the leaderboard as a friendly board, not a competitive one.
+- There is no rate limiting or moderation on submissions.
+- Rename rights live in the browser's `localStorage`: clearing site data or switching device loses them.
+
+## License
+
+© 2026 Hamza Ben Ismail. All rights reserved.

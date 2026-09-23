@@ -21,21 +21,55 @@ const nameInput = document.getElementById('player-name');
 const submitBtn = document.getElementById('submit-score-btn');
 const restartBtn = document.getElementById('restart-btn');
 
+// Edit tokens for scores submitted from this browser: { "<score id>": "<token>" }.
+// The server only stores a hash of each token, so only this browser can rename its scores.
+function getEditTokens() {
+    try {
+        return JSON.parse(localStorage.getItem('editTokens')) || {};
+    } catch (e) {
+        return {};
+    }
+}
+
+function saveEditToken(id, token) {
+    const tokens = getEditTokens();
+    tokens[id] = token;
+    localStorage.setItem('editTokens', JSON.stringify(tokens));
+}
+
 function updateLeaderboard() {
+    const tokens = getEditTokens();
     fetch('/leaderboard')
         .then(response => response.json())
         .then(data => {
             const list = document.getElementById('leaderboard-list');
-            list.innerHTML = '';
+            list.replaceChildren();
             data.forEach(entry => {
+                // Build the row with textContent only: player names are user input
+                // and must never be parsed as HTML.
                 const li = document.createElement('li');
-                li.innerHTML = `
-                    <span>${entry.name} <span class="edit-btn" data-id="${entry.id}" style="cursor:pointer; color:#888;">✎</span></span> 
-                    <span>${entry.score}</span>
-                `;
+                const nameCell = document.createElement('span');
+                nameCell.textContent = entry.name;
+
+                if (tokens[entry.id]) {
+                    const editBtn = document.createElement('button');
+                    editBtn.type = 'button';
+                    editBtn.className = 'edit-btn';
+                    editBtn.dataset.id = String(entry.id);
+                    editBtn.title = 'Rename';
+                    editBtn.setAttribute('aria-label', 'Rename your score');
+                    editBtn.textContent = '✎';
+                    nameCell.append(' ', editBtn);
+                }
+
+                const scoreCell = document.createElement('span');
+                scoreCell.textContent = String(entry.score);
+
+                li.append(nameCell, scoreCell);
                 list.appendChild(li);
             });
-        });
+        })
+        .catch(error => console.error('Could not load leaderboard:', error));
 }
 
 function rollDice() {
@@ -81,22 +115,24 @@ document.getElementById('slower-btn').addEventListener('click', () => {
 });
 
 submitBtn.addEventListener('click', () => {
-    const name = nameInput.value;
+    const name = nameInput.value.trim();
     if (!name) return alert("Please enter a name");
+    if (name.length > 20) return alert("Name must be 20 characters or fewer");
 
     fetch('/submit_score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name, score: rollCount })
     })
-    .then(res => {
+    .then(res => res.json().then(data => {
         if (!res.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(data.message || 'Network response was not ok');
         }
-        return res.json();
-    })
+        return data;
+    }))
     .then(data => {
         if (data.status === 'success') {
+            saveEditToken(data.id, data.edit_token);
             localStorage.removeItem('rollCount');
             localStorage.removeItem('gameFinished');
             modal.style.display = 'none';
@@ -107,26 +143,30 @@ submitBtn.addEventListener('click', () => {
     })
     .catch(error => {
         console.error('Error:', error);
-        alert("There was an error saving your score. Please try again.");
+        alert("There was an error saving your score: " + error.message);
     });
 });
 
-// Event listener for editing names in leaderboard
+// Event listener for renaming your own scores in the leaderboard
 document.getElementById('leaderboard-list').addEventListener('click', (e) => {
     if (e.target.classList.contains('edit-btn')) {
-        const id = e.target.getAttribute('data-id');
-        const newName = prompt("Enter new name:");
-        
-        if (newName) {
+        const id = e.target.dataset.id;
+        const token = getEditTokens()[id];
+        if (!token) return;
+        const newName = prompt("Enter new name (max 20 characters):");
+
+        if (newName && newName.trim()) {
             fetch('/update_name', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: id, name: newName })
+                body: JSON.stringify({ id: Number(id), name: newName.trim(), edit_token: token })
             })
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'success') updateLeaderboard();
-            });
+                else alert(data.message || "Could not rename this score.");
+            })
+            .catch(() => alert("Could not rename this score."));
         }
     }
 });
