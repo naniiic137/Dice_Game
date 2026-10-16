@@ -6,7 +6,7 @@ A small web game built with Flask and vanilla JavaScript. Six dice roll automati
 
 ## 🌐 Live Demo
 
-👉 **[https://nanic137.pythonanywhere.com](https://nanic137.pythonanywhere.com)**
+👉 **[https://dice-game-8cy.pages.dev](https://dice-game-8cy.pages.dev)** (Cloudflare Pages + D1, free, nothing to renew)
 
 ## ✨ Features
 
@@ -52,9 +52,9 @@ node scripts/build-pages.mjs
 node --test tests/test_pages.mjs
 ```
 
-## ☁️ Cloudflare Pages version (free, no monthly renewal)
+## ☁️ Cloudflare Pages version (the live demo)
 
-The same game also runs on **Cloudflare Pages** with a **D1** database (Cloudflare's SQLite). The free plan has no expiry and nothing to renew; free usage resets daily (100,000 requests to the score API, 5 million rows read, 100,000 rows written per day), far more than this game needs.
+The live demo runs on **Cloudflare Pages** with a **D1** database (Cloudflare's SQLite). The free plan has no expiry and nothing to renew; free usage resets daily (100,000 requests to the score API, 5 million rows read, 100,000 rows written per day), far more than this game needs.
 
 - `functions/` holds the three routes (`/leaderboard`, `/submit_score`, `/update_name`), which use `lib/dice.js`: the same rules and JSON answers as `app.py`, so `static/script.js` is unchanged.
 - `scripts/build-pages.mjs` builds `public/` (the page without Flask's `url_for`, plus `static/`).
@@ -67,9 +67,9 @@ The same game also runs on **Cloudflare Pages** with a **D1** database (Cloudfla
 
 Every push to `main` redeploys it.
 
-## 🚀 Deploying updates to PythonAnywhere
+## 🚀 Deploying the Flask version to PythonAnywhere (old host)
 
-The live demo runs on PythonAnywhere from a clone of this repository.
+The demo used to run on PythonAnywhere; its free web apps now expire every month, so it moved to Cloudflare. To run the Flask version there anyway:
 
 1. Open a **Bash console** on PythonAnywhere and pull the latest code:
    ```bash
