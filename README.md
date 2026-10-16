@@ -45,6 +45,28 @@ python -m unittest discover tests -v
 
 They cover score and name validation, HTML/control-character stripping, edit-token checks on renaming, leaderboard ordering, and migrating a database created by the older version.
 
+The Cloudflare version (below) has the same checks in `tests/test_pages.mjs`, run against Node's built-in SQLite (Node 22.5+, nothing to install):
+
+```bash
+node scripts/build-pages.mjs
+node --test tests/test_pages.mjs
+```
+
+## ☁️ Cloudflare Pages version (free, no monthly renewal)
+
+The same game also runs on **Cloudflare Pages** with a **D1** database (Cloudflare's SQLite). The free plan has no expiry and nothing to renew; free usage resets daily (100,000 requests to the score API, 5 million rows read, 100,000 rows written per day), far more than this game needs.
+
+- `functions/` holds the three routes (`/leaderboard`, `/submit_score`, `/update_name`), which use `lib/dice.js`: the same rules and JSON answers as `app.py`, so `static/script.js` is unchanged.
+- `scripts/build-pages.mjs` builds `public/` (the page without Flask's `url_for`, plus `static/`).
+- `schema.sql` creates the table; `scripts/export_scores.py database.db` turns an existing leaderboard into `import.sql`.
+
+**Setting it up** (Cloudflare dashboard):
+1. **Storage & databases → D1 → Create database** (e.g. `dice-game`). In its **Console**, run `schema.sql`, then `import.sql` if you are bringing scores over.
+2. **Workers & Pages → Create application → Pages → Connect to Git** → this repo, branch `main`, framework preset **None**, build command `node scripts/build-pages.mjs`, build output directory `public`.
+3. The project's **Settings → Bindings → Add → D1 database**: variable name `DB`, database `dice-game`. Then **Deployments → Retry deployment** so the binding takes effect.
+
+Every push to `main` redeploys it.
+
 ## 🚀 Deploying updates to PythonAnywhere
 
 The live demo runs on PythonAnywhere from a clone of this repository.

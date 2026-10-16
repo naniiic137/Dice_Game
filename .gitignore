@@ -7,3 +7,5 @@ venv/
 /index.html
 /main.py
 /images/
+public/
+import.sql
