@@ -6,7 +6,7 @@ A small web game built with Flask and vanilla JavaScript. Six dice roll automati
 
 ## 🌐 Live Demo
 
-👉 **[https://dice-game-8cy.pages.dev](https://dice-game-8cy.pages.dev)** (Cloudflare Pages + D1, free, nothing to renew)
+👉 **[https://dice-of-chance.pages.dev](https://dice-of-chance.pages.dev)** (Cloudflare Pages + D1, free, nothing to renew)
 
 ## ✨ Features
 
